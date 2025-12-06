@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhereWear MVP Test</title>
+    <style>
+        body { font-family: 'Suit', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background-color: #007AFF; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:disabled { background-color: #ccc; }
+        #preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+
+        /* 결과 카드 스타일 */
+        #resultArea { margin-top: 20px; display: none; }
+        .score-card { text-align: center; padding: 20px; background: #f9f9f9; border-radius: 10px; border: 2px solid #007AFF; }
+        .score { font-size: 40px; font-weight: bold; color: #007AFF; }
+        .feedback-item { margin-top: 15px; text-align: left; }
+        .label { font-size: 12px; color: #666; background: #eee; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>WhereWear 👔</h1>
+    <p style="text-align: center; color: #666;">오늘의 TPO 점수는?</p>
+
+    <div class="form-group">
+        <label>📷 옷차림 사진</label>
+        <input type="file" id="imageInput" accept="image/*" onchange="previewImage(this)">
+        <img id="preview" src="" alt="미리보기">
+    </div>
+
+    <div class="form-group">
+        <label>⏰ 시간/날씨</label>
+        <input type="text" id="timeInput" placeholder="예: 비오는 화요일 낮, 28도">
+    </div>
+
+    <div class="form-group">
+        <label>🏢 장소</label>
+        <input type="text" id="placeInput" placeholder="예: 소개팅 장소, 회사 미팅룸">
+    </div>
+
+    <div class="form-group">
+        <label>🎉 상황 (Occasion)</label>
+        <input type="text" id="occasionInput" placeholder="예: 첫 데이트, 임원 면접">
+    </div>
+
+    <button id="submitBtn" onclick="analyzeOutfit()">분석하기 ✨</button>
+
+    <div id="resultArea">
+        <div class="score-card">
+            <div>TPO 적합도</div>
+            <div class="score" id="resScore">0점</div>
+            <p id="resSummary" style="font-weight: bold; margin-top: 10px;">-</p>
+
+            <div class="feedback-item">
+                <span class="label">GOOD</span>
+                <p id="resGood">-</p>
+            </div>
+            <div class="feedback-item">
+                <span class="label">BAD</span>
+                <p id="resBad">-</p>
+            </div>
+            <div class="feedback-item">
+                <span class="label">STYLIST TIP</span>
+                <p id="resAdvice" style="color: #007AFF;">-</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function analyzeOutfit() {
+        const fileInput = document.getElementById('imageInput');
+        if(fileInput.files.length === 0) { alert("사진을 선택해주세요!"); return; }
+
+        const btn = document.getElementById('submitBtn');
+        btn.innerText = "스타일리스트가 분석 중입니다... 🧐";
+        btn.disabled = true;
+
+        // 1. 데이터 준비 (Multipart/form-data)
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+
+        // TPO 객체를 JSON 문자열로 변환해서 'tpo' 파트에 넣음 (서버 @RequestPart 대응)
+        const tpoData = {
+            time: document.getElementById('timeInput').value,
+            place: document.getElementById('placeInput').value,
+            occasion: document.getElementById('occasionInput').value
+        };
+
+        // 핵심: application/json 타입임을 명시하며 Blob으로 추가
+        formData.append("tpo", new Blob([JSON.stringify(tpoData)], { type: "application/json" }));
+
+        try {
+            // 2. 서버 요청 (로컬호스트 가정)
+            const response = await fetch('http://localhost:8080/api/v1/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("서버 오류 발생");
+
+            const data = await response.json();
+
+            // 3. 결과 표시
+            document.getElementById('resScore').innerText = data.score + "점";
+            document.getElementById('resSummary').innerText = data.summary;
+            document.getElementById('resGood').innerText = data.goodPoint;
+            document.getElementById('resBad').innerText = data.badPoint;
+            document.getElementById('resAdvice').innerText = data.advice;
+
+            document.getElementById('resultArea').style.display = 'block';
+
+        } catch (error) {
+            alert("분석 실패: " + error.message);
+        } finally {
+            btn.innerText = "분석하기 ✨";
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>

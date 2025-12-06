@@ -1,3 +1,17 @@
 spring:
   application:
-    name: wherewear
+    name: WhereWear
+# ??? ?? ?? ?? (10MB)
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# ???? API ? ??
+  ai:
+    google:
+      genai:
+        api-key: ${GENAI_API_KEY}
+        chat:
+          options:
+            model: gemini-2.5-flash
