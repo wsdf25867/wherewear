@@ -9,5 +9,5 @@ import org.springframework.context.annotation.Configuration
 class AIConfig {
 
     @Bean
-    fun chatClient(chatModel: ChatModel) = ChatClient.create(chatModel)
+    fun chatClient(chatModel: ChatModel): ChatClient = ChatClient.create(chatModel)
 }
