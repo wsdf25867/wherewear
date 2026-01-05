@@ -38,7 +38,7 @@ class AnalyzeOutfitService(
         // 이미지를 Media 객체로 변환
         val imageMedia = Media(mimeType, input.image)
 
-        // 사용자 프롬프트 구성
+        // 회원 프롬프트 구성
 
         return chatClient.prompt()
             .system("당신은 냉철하지만 센스 있는 패션 전문가 'WhereWear' AI입니다.")
