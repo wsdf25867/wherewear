@@ -1,4 +1,4 @@
-package com.wherewear.api.controller
+package com.wherewear.api.web
 
 import com.wherewear.api.service.AnalyzeOutfitService
 import org.springframework.http.MediaType
@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = ["*"]) // HTML 테스트를 위해 CORS 허용
-class OutfitController(
+class OutfitApi(
     private val analyzeOutfitService: AnalyzeOutfitService
 ) {
 

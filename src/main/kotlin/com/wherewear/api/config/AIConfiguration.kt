@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class AIConfig {
+class AIConfiguration {
 
     @Bean
     fun chatClient(chatModel: ChatModel): ChatClient = ChatClient.create(chatModel)
